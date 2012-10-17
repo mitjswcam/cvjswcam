@@ -1,0 +1,15 @@
+
+Native Libraries:
+Xuggler
+-linux 32 - no
+-linux 64 - no
+-win 32 - no
+-win 64 - no
+-osx 64 - no
+
+opencv
+-linux 32 - no
+-linux 64 - yes
+-win 32 - no
+-win 64 - yes
+-osx 64 - no

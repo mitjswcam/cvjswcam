@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Test</title>
+</head>
+<body>
+    <object type="application/x-java-applet" width="250" height="250">
+        <param name="archive" value="/target/m_webcam-1.0-jar-with-dependencies.jar" />
+        <param name="code" value="Main" />
+
+	<param name="lib_path"         value="http://localhost/webcam/lib" />
+
+	<param name="dll_archive_64"   value="javacv-windows-x86_64.jar" />
+	<param name="dll_archive_32"   value="javacv-windows-x86.jar" />
+	<param name="so_archive_64"    value="javacv-linux-x86_64.jar" />
+	<param name="so_archive_32"    value="javacv-linux-x86.jar" />
+	<param name="dylib_archive_64" value="javacv-macosx-x86_64.jar" />
+        Applet Failed to run.
+    </object>
+</body>
+</html>
