@@ -3,6 +3,7 @@ package org.mit.webcam.applet;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Set;
 
 import javax.swing.JApplet;
 
@@ -20,6 +21,9 @@ public class AppletOptions {
 	public static final String DEFAULT_UPLOAD_PATH  = "upload.php";
 	public static final int    DEFAULT_VIDEO_WIDTH  = 640;
 	public static final int    DEFAULT_VIDEO_HEIGHT = 480;
+	
+	public static final String DEFAULT_VIDEO_EXT = "mp4";
+	public static final String DEFAULT_IMAGE_EXT = "png";
 	
 	private JApplet applet = null;
 	
@@ -58,6 +62,14 @@ public class AppletOptions {
 	
 	public int getVideoHeight() {
 		return this.getVideoDim("rec_height", AppletOptions.DEFAULT_VIDEO_HEIGHT);
+	}
+	
+	public String getVideoFormat() {
+		return AppletOptions.DEFAULT_VIDEO_EXT;
+	}
+	
+	public String getImageFormat() {
+		return AppletOptions.DEFAULT_IMAGE_EXT;
 	}
 	
 	private File tmpdir = null;
