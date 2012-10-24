@@ -117,7 +117,7 @@ public class Main extends JApplet implements Parameterized {
 	 * 
 	 * @param action   the action for which a corresponding handler {@link Handlers} should be invoked
 	 * @param context  the map of arguments which a given action handler can (but is not required) to use
-	 * @see CtxRunnable
+	 * @see CtxRunnableAsync
 	 */
 	private void schedule(ACTIONS action, Map<String, Object> context) {
 		this.handlers.getSecureExecLoop().schedule(action.toString(), context);

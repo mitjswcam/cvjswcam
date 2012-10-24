@@ -10,33 +10,33 @@ import java.util.Set;
 import org.mit.webcam.applet.Main.ACTIONS;
 import org.mit.webcam.media.Camera;
 import org.mit.webcam.media.Detector;
-import org.mit.webcam.secure.CtxRunnable;
-import org.mit.webcam.secure.SecureExecLoop;
+import org.mit.webcam.secure.CtxRunnableAsync;
+import org.mit.webcam.secure.SecureExecLoopAsync;
 import org.mit.webcam.upload.FileUploader;
 
 public class Handlers {
 	private final Main applet;
-	private SecureExecLoop exec = null;
+	private SecureExecLoopAsync exec = null;
 	public Handlers(Main applet) {
 		this.applet = applet;
 	}
 	
 	
-	public SecureExecLoop getSecureExecLoop() {
+	public SecureExecLoopAsync getSecureExecLoop() {
 		if(this.exec == null) {
-			Map<String, CtxRunnable> handlers = new HashMap<String, CtxRunnable>();
+			Map<String, CtxRunnableAsync> handlers = new HashMap<String, CtxRunnableAsync>();
 			handlers.put(ACTIONS.START_RECORD.toString(), this.createStartRecordHandler());
 			handlers.put(ACTIONS.STOP_RECORDING.toString(), this.createStopRecordHandler());
 			handlers.put(ACTIONS.GRAB_FRAME.toString(), this.createGrabFrameHandler());
 			handlers.put(ACTIONS.UPLOAD.toString(), this.createUploadHandler());
 			handlers.put(ACTIONS.DETECT_VIDEO.toString(), this.createDetectVideoHandler());
-			this.exec = new SecureExecLoop(handlers);
+			this.exec = new SecureExecLoopAsync(handlers);
 		}
 		return this.exec;
 	}
 	
-	private CtxRunnable createDetectVideoHandler() {
-		CtxRunnable runnable = new CtxRunnable() {
+	private CtxRunnableAsync createDetectVideoHandler() {
+		CtxRunnableAsync runnable = new CtxRunnableAsync() {
 			public void run() {
 				boolean test = Detector.isWebcamAvailable();
 				this.toReturn(test);
@@ -45,8 +45,8 @@ public class Handlers {
 		return runnable;
 	}
 
-	private CtxRunnable createStartRecordHandler() {
-		CtxRunnable handler = new CtxRunnable() {
+	private CtxRunnableAsync createStartRecordHandler() {
+		CtxRunnableAsync handler = new CtxRunnableAsync() {
 			public void run() {
 				int width = this.getVariable("width", applet.options.getVideoWidth());
 				int height = this.getVariable("height", applet.options.getVideoHeight());
@@ -58,23 +58,24 @@ public class Handlers {
 		return handler;
 	}
 	
-	private CtxRunnable createStopRecordHandler() {
-		CtxRunnable handler = new CtxRunnable() {
+	private CtxRunnableAsync createStopRecordHandler() {
+		CtxRunnableAsync handler = new CtxRunnableAsync() {
 			public void run() {
 				File video = applet.getCamera().stop();
+				String id = null;
 				try {
-					String id = applet.resources.addVideo(video);
-					this.toReturn(id);
+					id = applet.resources.addVideo(video);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				this.toReturn(id);
 			}
 		};
 		return handler;
 	}
 	
-	private CtxRunnable createGrabFrameHandler() {
-		CtxRunnable handler = new CtxRunnable() {
+	private CtxRunnableAsync createGrabFrameHandler() {
+		CtxRunnableAsync handler = new CtxRunnableAsync() {
 			public void run() {
 				Camera c = applet.getCamera();
 				File f = applet.resources.getUniqueTempImage();
@@ -93,8 +94,8 @@ public class Handlers {
 		return handler;
 	}
 	
-	private CtxRunnable createUploadHandler() {
-		CtxRunnable handler = new CtxRunnable() {
+	private CtxRunnableAsync createUploadHandler() {
+		CtxRunnableAsync handler = new CtxRunnableAsync() {
 			public void run() {
 				String experiment_id = (String) this.getVariable("experiment_id");
 				if(experiment_id == null) {

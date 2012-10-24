@@ -4,7 +4,9 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-
+/**
+ * TODO: 
+ */
 public class AppletOptions {
 
 	public static final String DEFAULT_BASEPATH = "/";
@@ -74,7 +76,9 @@ public class AppletOptions {
 		this.applet = applet;
 	}
 	
-	//util methods
+	//
+	// Util methods
+	//
 	
 	public URL getServer() {
 		return this.getServer("");
@@ -179,11 +183,9 @@ public class AppletOptions {
 		String osName = System.getProperty("os.name").toLowerCase();
 		String bitness = System.getProperty("sun.arch.data.model");
 		
-		//System.out.println("OS: " + osName + ", bitness: " + bitness);
-
 		String archive = null;
 		
-		//TODO: parameter map
+		//TODO: clean up and refactor as parameter map
 		
 		if(osName.indexOf("win") >= 0) {
 			archive = applet.getParameter("dll_archive_" + bitness);
@@ -199,9 +201,6 @@ public class AppletOptions {
 				archive = DEFAULT_DYLIB_ARCHIVE_64;
 		} else {
 			throw new Error("Fatal Error: Could not retrieve valid native library for you platform: " + osName + ", " + bitness + " bit.");
-			//for now:
-			//System.err.println("messed up with detecting archive type, defaulting to win32");
-			//archive = "windows-x86.jar";
 		}
 		
 		return AppletOptions.joinURLPath(this.getLibraryPath(), archive);
@@ -213,6 +212,7 @@ public class AppletOptions {
 	
 	public String[][] getParameterInfo() {
 		return new String[][] {
+				{"base_path", "Path on a hosting server from which all other paths are relative."},
 				{"lib_path", "Path on a hosting server where native libraries can be retrieved."},
 				{"dll_archive_32", "Archive containing 32 bit Windows native libraries."},
 				{"dll_archive_64", "Archive containing 64 bit Windows native libraries."},
