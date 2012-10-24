@@ -2,11 +2,11 @@ package org.mit.webcam.upload;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -15,22 +15,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 public class FileUploader implements Runnable{
 	
-	public static File getFile(String id) {
-		return null;
-	}
-	
-	public static boolean uploadFiles(URL upURL, String[] ids) {
-		if(ids == null || ids.length == 0) 
-			return false;
-			
-		for(String id : ids) {
-			File f = FileUploader.getFile(id);
-			FileUploader.dispatchUpload(upURL, f);
-		}
-		return true;
-	}
-	
-	public static void uploadFiles(URL upURL, File[] files) {
+	public static void uploadFiles(URL upURL, List<File> files) {
 		for(File f : files) {
 			FileUploader.dispatchUpload(upURL, f);
 		}
@@ -38,7 +23,7 @@ public class FileUploader implements Runnable{
 		
 	//TODO: switch these to non-blocking async requests
 	public static void dispatchUpload(URL upURL, File localFile) {
-		System.out.println("Uploading " + localFile.getAbsolutePath());
+		System.out.println("Uploading " + localFile.getAbsolutePath() + " to " + upURL.toString());
 		FileUploader uploader = new FileUploader(upURL, localFile);
 		uploader.start();
 	}
@@ -61,8 +46,9 @@ public class FileUploader implements Runnable{
 	public void run() {
 		HttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(this.uploadUrl.toString());
+		post.setHeader("content-disposition", "form-data");
 		
-		MultipartEntity entity = new MultipartEntity();
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 		entity.addPart("fileFromJava", new FileBody(this.file));
 		CountingEntityWrapper toPost = new CountingEntityWrapper(entity);
 		
@@ -76,7 +62,9 @@ public class FileUploader implements Runnable{
 		});	
 		post.setEntity(toPost);
 		try {
-			HttpResponse resp = client.execute(post);
+			//org.apache.http.HttpResponse resp = client.execute(post);
+			//String output = org.apache.http.util.EntityUtils.toString(resp.getEntity());
+			client.execute(post);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

@@ -48,7 +48,6 @@ public class Handlers {
 	private CtxRunnable createStartRecordHandler() {
 		CtxRunnable handler = new CtxRunnable() {
 			public void run() {
-				Map<String, Object> context = this.getContext();
 				int width = this.getVariable("width", applet.options.getVideoWidth());
 				int height = this.getVariable("height", applet.options.getVideoHeight());
 				Camera c = applet.getCamera(width, height);
@@ -111,7 +110,7 @@ public class Handlers {
 				
 				//files.add( NEW JSON DATA FILE )
 				//FileUploader.uploadExperiment(applet.options.getUploadURL(), experiment_id, (File[])files.toArray());
-				FileUploader.uploadFiles(applet.options.getUploadURL(), (File[])files.toArray());
+				FileUploader.uploadFiles(applet.options.getUploadURL(), files);// (File[])files.toArray());
 			}
 		};
 		return handler;

@@ -1,6 +1,7 @@
 package org.mit.webcam.applet;
 
 import javax.swing.JApplet;
+
 import java.awt.Canvas;
 
 import java.io.File;
@@ -16,7 +17,7 @@ import org.mit.webcam.natlib.LibraryLoader;
 
 
 @SuppressWarnings("serial")
-public class Main extends JApplet {
+public class Main extends JApplet implements Parameterized {
 	
 	public static final String version = "0.1a";
 	
@@ -31,6 +32,7 @@ public class Main extends JApplet {
 	//private scope
 	private Canvas c = null;
 	private Handlers handlers = null;
+	private Camera camera = null;
 	
 	///
 	/// Applet Overide Methods
@@ -66,6 +68,20 @@ public class Main extends JApplet {
 		
 		this.handlers = new Handlers(this);
 		handlers.getSecureExecLoop(); //create it
+		
+		/*final JFileChooser chooser = new JFileChooser();
+		chooser.setMultiSelectionEnabled(true);
+		chooser.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				File[] files = chooser.getSelectedFiles();
+				List<File> list = new LinkedList<File>();
+				for(File f : files) {
+					list.add(f);
+				}
+				FileUploader.uploadFiles(options.getUploadURL(), list);
+			}
+		});
+		chooser.showOpenDialog(this);*/
 	}
 
 	@Override
@@ -120,6 +136,29 @@ public class Main extends JApplet {
 	/// PUBLIC JS INTERFACE -- all wrapped in try catch for better debugging than js console
 	///
 	
+	//TODO: move
+	private String experimentId = null;
+	public void setExperiment(String ex_id) {
+		this.experimentId = ex_id;
+	}
+	
+	public String getExperiment()  {
+		if(this.experimentId == null) throw new NullPointerException();
+		return this.experimentId;
+	}
+	
+	//TODO: move
+	private String userId = null;
+	public void setUser(String user_id) {
+		this.userId = user_id;
+	}
+	
+	public String getUser() {
+		if(this.userId == null) throw new NullPointerException();
+		return this.userId;
+	}
+	
+	//TODO: BOOL FLAGS
 	public void startRecording(boolean useVid, boolean useMic, boolean failOnMic) {
 		try {
 			schedule(ACTIONS.START_RECORD);
@@ -129,6 +168,7 @@ public class Main extends JApplet {
 		}
 	}
 	
+	//TODO: IMPL BOOL FLAGS
 	public void startRecording(boolean useVid, boolean useMic, boolean failOnMic, int width, int height) {
 		try {
 			HashMap<String, Object> context = new HashMap<String, Object>();
@@ -178,21 +218,23 @@ public class Main extends JApplet {
 		System.err.println("Implementation removed because it generated a full screen capture and is a potential privacy problem.");
 	}
 	
-	public boolean upload(String ex_id, String json, String[] exemptions) {
-		if(ex_id == "" || ex_id == null) return false;
-		
+	public void upload(String json, String[] exemptions) throws MissingArgumentException {
 		try {
 			HashMap<String, Object> context = new HashMap<String, Object>();
 			context.put("exempt_keys", new HashSet<String>(Arrays.asList(exemptions)));
 			context.put("json_data", json);
-			context.put("experiment_id", ex_id);
+			try {
+				context.put("experiment_id", this.getExperiment());
+				context.put("user_id", this.getUser());
+			} catch(NullPointerException e) {
+			    Exception e2 = new MissingArgumentException("userId or experimentId undefined");
+			    throw e2;
+			}
 			schedule(ACTIONS.UPLOAD, context);
-			return true;
 		} catch(Exception e) {
 			System.err.println("upload():");
 			e.printStackTrace();
 		}
-		return false;
 	}
 	
 	public String camFrameGrab() {
@@ -220,10 +262,9 @@ public class Main extends JApplet {
 	}
 	
 	///
-	///
+	/// Camera - package scope for Handlers
 	///
 	
-	private Camera camera = null;
 	Camera getCamera() {
 		if(this.camera == null) {
 			this.camera = new Camera(c, this.options.getVideoWidth(), this.options.getVideoHeight());
@@ -239,12 +280,4 @@ public class Main extends JApplet {
 		this.camera = new Camera(c, w, h);
 		return this.camera;
 	}
-	
-	
-	
-	
-	
-	
-	
-
 }

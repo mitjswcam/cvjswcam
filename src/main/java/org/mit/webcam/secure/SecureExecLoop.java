@@ -1,7 +1,6 @@
 package org.mit.webcam.secure;
 
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
 public class SecureExecLoop implements Runnable {

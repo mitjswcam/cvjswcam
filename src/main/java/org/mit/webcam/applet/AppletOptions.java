@@ -3,14 +3,13 @@ package org.mit.webcam.applet;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Set;
-
-import javax.swing.JApplet;
 
 
 public class AppletOptions {
 
-	public static final String DEFAULT_LIB_DL_PATH    = "/webcam/libs/";
+	public static final String DEFAULT_BASEPATH = "/";
+	
+	public static final String DEFAULT_LIB_DL_PATH    = "libs/";
 	
 	public static final String DEFAULT_DLL_ARCHIVE_64   = "win64.zip";
 	public static final String DEFAULT_SO_ARCHIVE_64    = "nix64.zip";
@@ -25,9 +24,53 @@ public class AppletOptions {
 	public static final String DEFAULT_VIDEO_EXT = "mp4";
 	public static final String DEFAULT_IMAGE_EXT = "png";
 	
-	private JApplet applet = null;
+	public static String joinFilePath(String path1, String path2) {
+		return AppletOptions.joinPath(path1, path2, File.separator);
+	}
 	
-	public AppletOptions(JApplet applet) {
+	public static String joinURLPath(String path1, String path2) {
+		return AppletOptions.joinPath(path1, path2, "/"); 
+	}
+	
+	public static String joinPath(String path1, String path2, String separator) {
+		if(path1 == null || path1 == "") {
+			return (path2 == null || path2 == "") ? "" : path2;
+		} else {
+			if(path2 == null || path2 == "") 
+				return path1;
+		}
+		
+		int sLen = separator.length(), p1Len = path1.length(), p2Len = path2.length();
+		int maxSize = p1Len + p2Len + sLen;
+		StringBuffer buffer = new StringBuffer(maxSize);
+		
+		/***
+		 * If we attempt to join a new path beginning with a separator, 
+		 * treat it as a root path and ignore the first.
+		 * 
+		 * This allows us to specify parameters outside of the base url
+		 * path if necessary. (eg. upload_path be in a separate path 
+		 * outside of the base path specified for the deployment)
+		 */
+		int index = path2.indexOf(separator);
+		if(index == 0) { // && !path1.contains("://") protocol specifier
+			return path2;
+		}
+		
+		//remove any trailing separators
+		index = path1.lastIndexOf(separator);
+		if(index == path1.length() - separator.length()) {
+			path1 = path1.substring(0, index);
+		}
+		
+		buffer.append(path1);
+		buffer.append(separator);
+		buffer.append(path2);
+		return buffer.toString();
+	}
+	
+	private Parameterized applet = null;
+	public AppletOptions(Parameterized applet) {
 		this.applet = applet;
 	}
 	
@@ -38,9 +81,16 @@ public class AppletOptions {
 	}
 	
 	public URL getServer(String path) {
+		String base = getBasePath();
+		path = AppletOptions.joinURLPath(base, path);
+		return getServerAbsolute(path);
+	}
+	
+	public URL getServerAbsolute(String path) {
 		URL cb = this.applet.getCodeBase();
 		URL server = null;
 		try {
+			//TODO: so that if path specifies a whole url it just uses that
 			server = new URL(cb.getProtocol(), cb.getHost(), cb.getPort(), path);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -88,9 +138,17 @@ public class AppletOptions {
 	///
 	
 	private String getUploadPath() {
-		String path = this.applet.getParameter("uploadPath");
+		String path = this.applet.getParameter("upload_path");
 		if(path == null) {
 			path = DEFAULT_UPLOAD_PATH;
+		}
+		return path;
+	}
+	
+	private String getBasePath() {
+		String path = this.applet.getParameter("base_path");
+		if(path == null) {
+			path = AppletOptions.DEFAULT_BASEPATH;
 		}
 		return path;
 	}
@@ -118,10 +176,15 @@ public class AppletOptions {
 	}
 	
 	private String getLibArchivePath() {
-		String osName = System.getProperty("os.name");
+		String osName = System.getProperty("os.name").toLowerCase();
 		String bitness = System.getProperty("sun.arch.data.model");
+		
+		//System.out.println("OS: " + osName + ", bitness: " + bitness);
 
 		String archive = null;
+		
+		//TODO: parameter map
+		
 		if(osName.indexOf("win") >= 0) {
 			archive = applet.getParameter("dll_archive_" + bitness);
 			if(archive == null)
@@ -135,13 +198,13 @@ public class AppletOptions {
 			if(archive == null) 
 				archive = DEFAULT_DYLIB_ARCHIVE_64;
 		} else {
-			//throw new Error("Fatal Error: Could not retrieve valid native library for you platform: " + osName + ", " + bitness + " bit.");
+			throw new Error("Fatal Error: Could not retrieve valid native library for you platform: " + osName + ", " + bitness + " bit.");
 			//for now:
-			System.err.println("messed up with detecting archive type, defaulting to win32");
-			archive = "windows-x86.jar";
+			//System.err.println("messed up with detecting archive type, defaulting to win32");
+			//archive = "windows-x86.jar";
 		}
 		
-		return this.getLibraryPath() + "/" + archive;
+		return AppletOptions.joinURLPath(this.getLibraryPath(), archive);
 	}
 	
 	///

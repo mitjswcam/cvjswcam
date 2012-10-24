@@ -147,15 +147,15 @@ public class Camera implements Runnable {
 				}
 				
 				
-				/*recorder = FrameRecorder.createDefault(this.dest, width, height);
+				recorder = FrameRecorder.createDefault(this.dest, width, height);
 				recorder.setVideoCodec(CODEC_ID_MPEG4);
 			    recorder.setPixelFormat(PIX_FMT_YUV420P);
 			    
-				recorder.setAudioCodec(CODEC_ID_AAC);
-				recorder.setAudioChannels(audio_format.getChannels());
-				int bitrate = (int) (audio_format.getSampleSizeInBits() * audio_format.getSampleRate() * audio_format.getChannels());
-				recorder.setAudioBitrate(bitrate);
-				recorder.start();*/
+				//recorder.setAudioCodec(CODEC_ID_AAC);
+				//recorder.setAudioChannels(audio_format.getChannels());
+				//int bitrate = (int) (audio_format.getSampleSizeInBits() * audio_format.getSampleRate() * audio_format.getChannels());
+				//recorder.setAudioBitrate(bitrate);
+				recorder.start();
 			}
 			
 			long lastFrameNano = 0;
@@ -183,7 +183,7 @@ public class Camera implements Runnable {
 					if(count > 0) {
 						recorder.record(ByteBuffer.wrap(buffer, 0, count));
 					}*/
-					//recorder.record(image);
+					recorder.record(image);
 					
 					Thread.yield();
 				}
@@ -244,7 +244,7 @@ public class Camera implements Runnable {
 			this.h = h;
 		}
 		public void run() {
-			System.out.println("PAINTING");
+			//System.out.println("PAINTING");
 			c.getGraphics().drawImage(image, 0, 0, w, h, c);
 		}
 	}
