@@ -1,12 +1,17 @@
 package org.mit.webcam.applet;
 
 import javax.swing.JApplet;
+import javax.swing.JFileChooser;
 
 import java.awt.Canvas;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import java.io.File;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +19,7 @@ import java.util.HashSet;
 import org.mit.webcam.media.Camera;
 import org.mit.webcam.media.Detector;
 import org.mit.webcam.natlib.LibraryLoader;
+import org.mit.webcam.upload.FileUploader;
 
 
 @SuppressWarnings("serial")
@@ -22,7 +28,7 @@ public class Main extends JApplet implements Parameterized {
 	public static final String version = "0.1a";
 	
 	public static enum ACTIONS {
-		START_RECORD, STOP_RECORDING, GRAB_FRAME, UPLOAD, DETECT_VIDEO
+		START_RECORD, STOP_RECORDING, GRAB_FRAME, UPLOAD, DETECT_VIDEO, UPLOAD_SINGLE
 	};
 
 	//package scope
@@ -69,6 +75,8 @@ public class Main extends JApplet implements Parameterized {
 		this.handlers = new Handlers(this);
 		handlers.getSecureExecLoop(); //create it
 		
+		/*this.setUser("ME");
+		this.setExperiment("EX");
 		/*final JFileChooser chooser = new JFileChooser();
 		chooser.setMultiSelectionEnabled(true);
 		chooser.addActionListener(new ActionListener() {
@@ -136,26 +144,20 @@ public class Main extends JApplet implements Parameterized {
 	/// PUBLIC JS INTERFACE -- all wrapped in try catch for better debugging than js console
 	///
 	
-	//TODO: move
-	private String experimentId = null;
-	public void setExperiment(String ex_id) {
-		this.experimentId = ex_id;
+	public void setExperiment(String ex) {
+		FileUploader.setExperiment(ex);
 	}
 	
-	public String getExperiment()  {
-		if(this.experimentId == null) throw new NullPointerException();
-		return this.experimentId;
+	public void setUser(String user) {
+		FileUploader.setUser(user);
 	}
 	
-	//TODO: move
-	private String userId = null;
-	public void setUser(String user_id) {
-		this.userId = user_id;
+	public String getExperiment() {
+		return FileUploader.getExperiment();
 	}
 	
 	public String getUser() {
-		if(this.userId == null) throw new NullPointerException();
-		return this.userId;
+		return FileUploader.getUser();
 	}
 	
 	//TODO: BOOL FLAGS
@@ -218,24 +220,29 @@ public class Main extends JApplet implements Parameterized {
 		System.err.println("Implementation removed because it generated a full screen capture and is a potential privacy problem.");
 	}
 	
-	public void upload(String json, String[] exemptions) throws MissingArgumentException {
+	public void upload(String[] exemptions) throws MissingArgumentException {
 		try {
 			HashMap<String, Object> context = new HashMap<String, Object>();
 			context.put("exempt_keys", new HashSet<String>(Arrays.asList(exemptions)));
-			context.put("json_data", json);
-			try {
-				context.put("experiment_id", this.getExperiment());
-				context.put("user_id", this.getUser());
-			} catch(NullPointerException e) {
-			    Exception e2 = new MissingArgumentException("userId or experimentId undefined");
-			    throw e2;
-			}
+			//context.put("json_data", json);
 			schedule(ACTIONS.UPLOAD, context);
 		} catch(Exception e) {
 			System.err.println("upload():");
 			e.printStackTrace();
 		}
 	}
+	
+	public void uploadConsent(String id) {
+		try {
+			HashMap<String, Object> context = new HashMap<String, Object>();
+			context.put("id", id);
+			schedule(ACTIONS.UPLOAD_SINGLE, context);
+		} catch(Exception e) {
+			System.err.println("uploadConsent():");
+			e.printStackTrace();
+		}
+	}
+	
 	
 	public String camFrameGrab() {
 		try {

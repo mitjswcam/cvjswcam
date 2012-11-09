@@ -30,6 +30,7 @@ public class Handlers {
 			handlers.put(ACTIONS.GRAB_FRAME.toString(), this.createGrabFrameHandler());
 			handlers.put(ACTIONS.UPLOAD.toString(), this.createUploadHandler());
 			handlers.put(ACTIONS.DETECT_VIDEO.toString(), this.createDetectVideoHandler());
+			handlers.put(ACTIONS.UPLOAD_SINGLE.toString(), this.createUploadSingleHandler());
 			this.exec = new SecureExecLoopAsync(handlers);
 		}
 		return this.exec;
@@ -94,16 +95,29 @@ public class Handlers {
 		return handler;
 	}
 	
+	private CtxRunnableAsync createUploadSingleHandler() {
+		CtxRunnableAsync handler = new CtxRunnableAsync() {
+			@Override
+			public void run() {
+				String id = (String)this.getVariable("id");
+				if(id == null) return;
+				File localFile = applet.resources.getImage(id);
+				FileUploader.dispatchUpload(applet.options.getUploadURL(), localFile);
+			}
+		};
+		return handler;
+	}
+	
 	private CtxRunnableAsync createUploadHandler() {
 		CtxRunnableAsync handler = new CtxRunnableAsync() {
 			public void run() {
-				String experiment_id = (String) this.getVariable("experiment_id");
+				/*String experiment_id = (String) this.getVariable("experiment_id");
 				if(experiment_id == null) {
 					System.err.println("(experiment_id) must be specified");
-				}
+				}*/ //deprecated and moved to static
 				
-				String json_data = (String) this.getVariable("json_data");
-				json_data = (json_data != null) ? json_data : "";
+				//String json_data = (String) this.getVariable("json_data");
+				//json_data = (json_data != null) ? json_data : "";
 				
 				Set<String> exempt_keys = this.getVariable("exempt_keys", new HashSet<String>());
 				

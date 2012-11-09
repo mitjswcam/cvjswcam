@@ -10,10 +10,35 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.mit.webcam.applet.Main;
 
 
 
 public class FileUploader implements Runnable{
+	
+	private static String experimentId = null;
+	public static void setExperiment(String ex_id) {
+		FileUploader.experimentId = ex_id;
+	}
+		
+	public static String getExperiment()  {
+		if(FileUploader.experimentId == null) throw new NullPointerException();
+		return FileUploader.experimentId;
+	}
+		
+	private static String userId = null;
+	public static void setUser(String user_id) {
+		FileUploader.userId = user_id;
+	}
+		
+	public static String getUser() {
+		if(FileUploader.userId == null) throw new NullPointerException();
+		return FileUploader.userId;
+	}
+	
+	public static void uploadMongo(URL upURL, String json) {
+		System.out.println("Deprecated: Upload mongo json in javascript ajax call");
+	}
 	
 	public static void uploadFiles(URL upURL, List<File> files) {
 		for(File f : files) {
@@ -49,6 +74,12 @@ public class FileUploader implements Runnable{
 		post.setHeader("content-disposition", "form-data");
 		
 		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		try {
+		entity.addPart("experiment_id", new org.apache.http.entity.mime.content.StringBody(FileUploader.getExperiment()));
+		entity.addPart("user_id", new org.apache.http.entity.mime.content.StringBody(FileUploader.getUser()));
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 		entity.addPart("fileFromJava", new FileBody(this.file));
 		CountingEntityWrapper toPost = new CountingEntityWrapper(entity);
 		
@@ -64,6 +95,7 @@ public class FileUploader implements Runnable{
 		try {
 			//org.apache.http.HttpResponse resp = client.execute(post);
 			//String output = org.apache.http.util.EntityUtils.toString(resp.getEntity());
+			//System.out.println("HttpResponse: " + output);
 			client.execute(post);
 		} catch(Exception e) {
 			e.printStackTrace();
